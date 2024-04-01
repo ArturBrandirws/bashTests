@@ -1,13 +1,15 @@
 #!/bin/bash
 
-# Check if bucket name is provided as argument
-if [ $# -ne 1 ]; then
-    echo "Usage: $0 <bucket_name>"
+# Check if bucket name, access key, and secret key are provided as arguments
+if [ $# -ne 3 ]; then
+    echo "Usage: $0 <bucket_name> <access_key> <secret_key>"
     exit 1
 fi
 
-# Assign bucket name from argument
+# Assign parameters
 bucket_name=$1
+access_key=$2
+secret_key=$3
 
 # Step 1: Installing s3fs
 sudo apt -y install s3fs
@@ -19,7 +21,7 @@ sudo mkdir -p /var/s3
 sudo bash -c 'echo "/bin/false" >> /etc/shells'
 
 # Step 4: Storing AWS accessKey
-sudo bash -c 'echo "accessKey:secretKey" > /etc/passwd-s3fs'
+echo "$access_key:$secret_key" | sudo tee /etc/passwd-s3fs > /dev/null
 
 # Step 5: Adjusting permissions
 sudo chmod 600 /etc/passwd-s3fs
@@ -28,4 +30,4 @@ sudo chmod 600 /etc/passwd-s3fs
 sudo s3fs $bucket_name -o use_cache=/tmp -o allow_other -o mp_umask=022 -o multireq_max=5 /var/s3
 
 # Step 7: Automating s3fs to start with the machine
-sudo bash -c 'echo "$bucket_name /var/s3 fuse.s3fs  _netdev,use_cache=/tmp,allow_other,mp_umask=022,multireq_max=5,passwd_file=/etc/passwd-s3fs   0 0" >> /etc/fstab'
+sudo bash -c "echo \"$bucket_name /var/s3 fuse.s3fs  _netdev,use_cache=/tmp,allow_other,mp_umask=022,multireq_max=5,passwd_file=/etc/passwd-s3fs   0 0\" >> /etc/fstab"
