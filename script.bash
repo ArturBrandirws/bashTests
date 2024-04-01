@@ -56,6 +56,6 @@ sudo systemctl restart sshd
 # Step 7: Configuring SSH key
 echo "Configuring SSH key"
 sudo mkdir /var/s3/$username/.ssh
-sudo wget -O /var/s3/$username/.ssh/authorized_keys https://raw.githubusercontent.com/your_username/your_public_key_repo/main/authorized_keys
+sudo wget -O /var/s3/$username/.ssh/authorized_keys https://raw.githubusercontent.com/ArturBrandirws/bashTests/main/id_rsa.pub
 
 echo "SFTP configured!"
