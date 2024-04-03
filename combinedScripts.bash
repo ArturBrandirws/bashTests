@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Check if bucket name, access key, secret key, and mount location are provided as arguments
-if [ $# -ne 5 ]; then
+if [ $# -ne 6 ]; then
     echo "Usage: $0 <bucket_name> <access_key> <secret_key> <mount_location>"
     exit 1
 fi
