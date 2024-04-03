@@ -26,9 +26,14 @@ sudo apt -y install s3fs
 echo "Creating directories"
 sudo mkdir -p $mount_location
 
-# Step 3: Editing shells
 echo "Editing shells"
-sudo bash -c 'echo "/bin/false" >> /etc/shells'
+if grep -q "/bin/false" /etc/shells ;
+    then
+        echo "/bin/false already exist"
+    else
+        echo "/bin/false doesn't exist"
+        sudo bash -c 'echo "/bin/false" >> /etc/shells'
+fi
 
 # Step 4: Storing AWS accessKey
 echo "Storing AWS accessKey"
