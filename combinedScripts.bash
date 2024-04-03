@@ -74,7 +74,7 @@ sudo chown $username:$group_user $mount_location/$username/upload
 # Step 5: Configuring SSH to SFTP
 
 echo "Configuring SSH to SFTP"
-sudo bash -c 'cat <<EOF >> /etc/ssh/sshd_config
+sudo bash -c "cat <<EOF >> /etc/ssh/sshd_config
 
 KbdInteractiveAuthentication no
 PasswordAuthentication yes
@@ -84,7 +84,7 @@ Match Group $group_user
        ChrootDirectory $mount_location/%u
        ForceCommand internal-sftp
        AllowTcpForwarding no
-EOF'
+EOF"
 echo "SFTP configuration finished"
 
 # Step 6: Restarting SSH service
