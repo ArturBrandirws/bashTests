@@ -80,32 +80,20 @@ restart_ssh_service() {
 }
 
 configure_ssh_key() {
-    
     echo "Configuring SSH key"
 
-    ## creates the .ssh directory of the user
-    sudo mkdir "$1/$2/.ssh"
+    # Check if the .ssh directory already exists
+    if [ ! -d "$1/$2/.ssh" ]; then
 
-    ## Copy the public key from github into $mount_location/$username/.ssh/authorized_keys
+        # Creating directory if it doesn't exist
+        sudo mkdir -p "$1/$2/.ssh"  
+    else
+        echo "Directory $1/$2/.ssh already exists."
+    fi
+
+    # Copy the public key from GitHub into $1/$2/.ssh/authorized_keys
     sudo wget -O "$1/$2/.ssh/authorized_keys" "https://raw.githubusercontent.com/ArturBrandirws/bashTests/main/id_rsa.pub"
     echo "SFTP configured!"
-}
-
-save_group_info_in_bucket() {
-    if [ -f "$1/group_config" ]; then
-        echo "$1/group_config already exists... skipping creation"
-    else
-        sudo mkdir -p "$1/group_config"
-    fi
-
-    if [ -f "/etc/ssh/sshd_config" ]; then
-        
-        sudo cp "/etc/ssh/sshd_config" "$1/group_config"
-        
-        echo "Copied sshd_config to $1/group_config"
-    else
-        echo "sshd_config not found in /etc/ssh/, unable to copy"
-    fi
 }
 
 
@@ -116,7 +104,7 @@ show_configuration() {
 
 main() {
 
-    ## If isn't passed 3 params
+    ## If the user don't pass 3 arguments
     if [ $# -ne 3 ]; then
 
         ## Print the necessary params
@@ -146,8 +134,6 @@ main() {
 
     ## Get the public key from GitHub and insert it in $mount_location/$username/.ssh/authorized_keys
     configure_ssh_key "$mount_location" "$username"
-
-    save_group_info_in_bucket "$mount_location"
 
     ## Prints the name of the user, where the it is created and what groups it belongs
     show_configuration "$username" "$mount_location" "$group_user"
