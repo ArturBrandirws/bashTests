@@ -1,9 +1,6 @@
 #!/bin/bash
 
-usage() {
-    
-    echo "Usage: $0 <mount_location> <group_user> <username>"
-}
+source ./scripts/users.bash
 
 install_openssh_server() {
 
@@ -104,39 +101,61 @@ show_configuration() {
 
 main() {
 
-    ## If the user don't pass 3 arguments
-    if [ $# -ne 3 ]; then
+    ## Assing params
+  bucket_name=$(usersList)
+  echo "one is ${bucket_name[@]}"
 
-        ## Print the necessary params
-        usage
-        exit 1
-    fi
+  # Set the IFS variable to ;
+  IFS=';'
 
-    ## Assign params
-    mount_location="$1"
-    group_user="$2"
-    username="$3"
+  # Read the output into an array, splitting by ;
+  parsedArray=($bucket_name)
+
+  # Reset IFS to the default value
+  unset IFS
+
+  ##########
+
+  # Set the IFS variable to ,
+  IFS=','
+
+  # Iterate over the parsedArray
+  for element in "${parsedArray[@]}"; do
+    # Parse the element by , and read into an array
+    parsedElement=($element)
+
+    # Get the first value
+    userName=${parsedElement[0]}
+    bucketName=${parsedElement[1]}
+
+    # Print the first value
+    echo "userName is $userName"
+    echo "group is $bucketName"
+
+    # Define mount location
+    mount_location="/var/$bucketName"
 
     ## install openssh server
     install_openssh_server
 
     ## Check if the group passed already exist. If it doesn't exist create the group and insert the configuration for the group in /etc/ssh/sshd_config
-    configure_ssh_sftp "$group_user" "$mount_location"
+    configure_ssh_sftp "$bucketName" "$mount_location"
 
     ## Check if the user passed already exist. If it doesn't exist create and configure.
-    create_user "$username" "$mount_location" "$group_user"
+    create_user "$userName" "$mount_location" "$bucketName"
 
     ## Adjust the owners to make sftp conncetion possible
-    adjust_owners "$group_user" "$mount_location" "$username"
+    adjust_owners "$bucketName" "$mount_location" "$userName"
 
     ## Restart ssh service
     restart_ssh_service
 
     ## Get the public key from GitHub and insert it in $mount_location/$username/.ssh/authorized_keys
-    configure_ssh_key "$mount_location" "$username"
+    configure_ssh_key "$mount_location" "$userName"
 
     ## Prints the name of the user, where the it is created and what groups it belongs
-    show_configuration "$username" "$mount_location" "$group_user"
+    show_configuration "$userName" "$mount_location" "$bucketName"
+  done
 }
 
 main "$@"

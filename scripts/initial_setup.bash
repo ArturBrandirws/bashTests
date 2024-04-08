@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: $0 <access_key> <secret_key> "
+    echo "Usage: This script don't accept any param."
 }
 
 prepare_system() {
@@ -25,46 +25,21 @@ install_awscli() {
     sudo apt -y install awscli
 }
 
-store_aws_credentials() {
-    
-    echo "Configuring AWS credentials"
-
-    ## insert the accesskey in the AWSCLI credentials file
-    sudo aws configure set aws_access_key_id $1
-
-    ## insert the secretkey in the AWSCLI credentials file
-    sudo aws configure set aws_secret_access_key $2
-
-}
-
 show_configuration() {
 
     ## Print the end of configuration
-    echo "AWS credentials saved .aws/credentials"
+    echo "System upgraded and AWSCLI installed"
 }
 
 main () {
-
-    ## If the user don't pass 2 arguments
-    if [ $# -ne 0 ]; then
-        usage
-        exit 1
-    fi
-
-    access_key=$1
-    secret_key=$2
-
     ## Update and upgrade the system
     prepare_system
     
     ## Intalls s3fs
     install_awscli
 
-    ## Store the aws credentials in /etc/passwd-s3fs
-    ##store_aws_credentials "$access_key" "$secret_key"
-
     ## Print the end of configuration
     show_configuration
 }
 
-main "$@"
+main

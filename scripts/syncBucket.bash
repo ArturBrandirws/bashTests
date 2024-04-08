@@ -22,7 +22,7 @@ create_users() {
         username=$(basename "$file")
 
         ## create a sftp user for the bucket
-        bash <(wget -qO- "https://raw.githubusercontent.com/ArturBrandirws/bashTests/main/scripts/userCreation.bash") "$1" "$2" "$username"
+        bash <(wget -qO- "https://raw.githubusercontent.com/rws-retail/sftp/develop/scripts/userCreation.bash?token=GHSAT0AAAAAACOYPUYW4S6VROB75EFRCIHKZQP7OIA") "$1" "$2" "$username"
     done
 }
 
@@ -34,7 +34,7 @@ show_configuration() {
 
 main () {
 
-    ## If the user don't pass 2 arguments
+    ## if the number of params isn't equal to 2
     if [ $# -ne 2 ]; then
         usage
         exit 1

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# source the functions file
+source ./scripts/users.bash
+
 usage() {
     echo "Usage: $0 <bucket_name> <mount_location>"
 }
@@ -57,16 +60,39 @@ show_configuration() {
 }
 
 main() {
+  ## Assing params
+  bucket_name=$(usersList)
+  echo "one is ${bucket_name[@]}"
 
-    ## If the user don't pass 2 arguments
-    if [ $# -ne 2 ]; then
-        usage
-        exit 1
-    fi
+  # Set the IFS variable to ;
+  IFS=';'
 
-    ## Assing params
-    bucket_name=$1
-    mount_location=$2
+  # Read the output into an array, splitting by ;
+  parsedArray=($bucket_name)
+
+  # Reset IFS to the default value
+  unset IFS
+
+  ##########
+
+  # Set the IFS variable to ,
+  IFS=','
+
+  # Iterate over the parsedArray
+  for element in "${parsedArray[@]}"; do
+    # Parse the element by , and read into an array
+    parsedElement=($element)
+
+    # Get the first value
+    userName=${parsedElement[0]}
+    bucketName=${parsedElement[1]}
+
+    # Print the first value
+    echo "userName is $userName"
+    echo "bucket is $bucketName"
+
+    # Define mount location
+    mount_location="/var/$bucketName"
 
     ## create directories where the bucket will be mounted
     create_directories "$mount_location"
@@ -75,13 +101,17 @@ main() {
     edit_shells
 
     ## configure the s3 bucket in the mount location
-    configure_s3_bucket "$bucket_name" "$mount_location"
+    configure_s3_bucket "$bucketName" "$mount_location"
 
     ## automate the bucket mount when the machine reboot
-    automate_start_with_machine "$bucket_name" "$mount_location"
+    automate_start_with_machine "$bucketName" "$mount_location"
 
     ## Print the end of configuration
-    show_configuration "$bucket_name" "$mount_location"
+    show_configuration "$bucketName" "$mount_location"
+  done
+
+  # Reset IFS to the default value
+  unset IFS
 }
 
-main "$@"
+main
