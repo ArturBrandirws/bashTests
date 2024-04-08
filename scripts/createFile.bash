@@ -1,7 +1,7 @@
 createFiles() {
     # Create 10000 files.txt with different names
     for ((i=1; i<=10000; i++)); do
-        touch "$1/$2/file_$i.txt"
+        sudo touch "$1/$2/file_$i.txt"
         echo "created file_$I.txt in $1/$2"
     done
 }
