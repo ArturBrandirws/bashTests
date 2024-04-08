@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # source the functions file
-source ./scripts/users.bash
+source ~/bashTests/scripts/users.bash
 
 usage() {
     echo "Usage: $0 <bucket_name> <mount_location>"
@@ -18,7 +18,7 @@ create_directories() {
     else    
 
         ## create the directory
-        mkdir -p "$1"
+        sudo mkdir -p "$1"
         echo "$1 created"
     fi
 }
@@ -35,7 +35,7 @@ edit_shells() {
         echo "/bin/false doesn't exist"
 
         ## insert "/bin/false" into /etc/shells
-        bash -c 'echo "/bin/false" >> /etc/shells'
+        sudo bash -c 'echo "/bin/false" >> /etc/shells'
     fi
 }
 
@@ -43,7 +43,7 @@ configure_s3_bucket() {
     echo "Configuring S3 Bucket"
 
     ## Mount the bucket into the folder passed
-    s3fs "$1" -o use_cache=/tmp -o allow_other -o mp_umask=022 -o multireq_max=5,nonempty "$2"
+    sudo s3fs "$1" -o use_cache=/tmp -o allow_other -o mp_umask=022 -o multireq_max=5,nonempty "$2"
 
 }
 
@@ -51,7 +51,7 @@ automate_start_with_machine() {
     echo "Automating s3fs to start with the machine"
 
     ## Automate the mount when the machine reboot
-    bash -c "echo \"$1 $2 fuse.s3fs _netdev,use_cache=/tmp,allow_other,mp_umask=022,multireq_max=5,passwd_file=/etc/passwd-s3fs 0 0\" >> /etc/fstab"
+    sudo bash -c "echo \"$1 $2 fuse.s3fs _netdev,use_cache=/tmp,allow_other,mp_umask=022,multireq_max=5,passwd_file=/etc/passwd-s3fs 0 0\" >> /etc/fstab"
 }
 
 show_configuration() {
@@ -61,14 +61,14 @@ show_configuration() {
 
 main() {
   ## Assing params
-  user_list=$(usersList)
-  echo "user_list is ${user_list[@]}"
+  bucket_name=$(usersList)
+  echo "one is ${bucket_name[@]}"
 
   # Set the IFS variable to ;
   IFS=';'
 
   # Read the output into an array, splitting by ;
-  parsedArray=($user_list)
+  parsedArray=($bucket_name)
 
   # Reset IFS to the default value
   unset IFS
@@ -84,15 +84,15 @@ main() {
     parsedElement=($element)
 
     # Get the first value
-    user_name=${parsedElement[0]}
-    bucket_name=${parsedElement[1]}
+    userName=${parsedElement[0]}
+    bucketName=${parsedElement[1]}
 
     # Print the first value
-    echo "userName is $user_name"
-    echo "bucket is $bucket_name"
+    echo "userName is $userName"
+    echo "bucket is $bucketName"
 
     # Define mount location
-    mount_location="/var/$bucket_name"
+    mount_location="/var/$bucketName"
 
     ## create directories where the bucket will be mounted
     create_directories "$mount_location"
@@ -101,13 +101,13 @@ main() {
     edit_shells
 
     ## configure the s3 bucket in the mount location
-    configure_s3_bucket "$bucket_name" "$mount_location"
+    configure_s3_bucket "$bucketName" "$mount_location"
 
     ## automate the bucket mount when the machine reboot
-    automate_start_with_machine "$bucket_name" "$mount_location"
+    automate_start_with_machine "$bucketName" "$mount_location"
 
     ## Print the end of configuration
-    show_configuration "$bucket_name" "$mount_location"
+    show_configuration "$bucketName" "$mount_location"
   done
 
   # Reset IFS to the default value

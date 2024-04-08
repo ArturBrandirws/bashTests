@@ -10,7 +10,7 @@ usage() {
 install_s3fs() {
   echo "Installing s3fs"
   ## install s3fs
-  apt -yqq install s3fs
+  sudo apt -yqq install s3fs
 }
 
 store_aws_credentials() {
@@ -28,7 +28,7 @@ adjust_permissions() {
     
   ## if the /etc/passwd-s3fs file isn't chmod 600
   if [ $(stat -c "%a" /etc/passwd-s3fs) -ne 600 ]; then
-    chmod 600 /etc/passwd-s3fs
+    sudo chmod 600 /etc/passwd-s3fs
   fi
 }
 

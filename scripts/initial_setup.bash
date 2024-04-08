@@ -7,25 +7,22 @@ usage() {
 prepare_system() {
 
     ## edit /etc/needrestart/needrestart.conf to avoid kernel restart window
-    sed -i "s/#\$nrconf{kernelhints} = -1;/\$nrconf{kernelhints} = -1;/g" /etc/needrestart/needrestart.conf
+    sudo sed -i "s/#\$nrconf{kernelhints} = -1;/\$nrconf{kernelhints} = -1;/g" /etc/needrestart/needrestart.conf
 
     ## edit /etc/needrestart/needrestart.conf to avoid kernel restart window
-    sed -i "s/#\$nrconf{restart} = 'i';/\$nrconf{restart} = 'a';/g" /etc/needrestart/needrestart.conf
+    sudo sed -i "s/#\$nrconf{restart} = 'i';/\$nrconf{restart} = 'a';/g" /etc/needrestart/needrestart.conf
 
     echo "Performing system update and upgrade"
 
     ## update and upgrade the system
-    echo "Starting update and upgrade apt"
-    apt update && sudo apt -y upgrade
-    echo "Ended update and upgrade apt"
+    sudo apt update && sudo apt -y upgrade
 }
 
 install_awscli() {
     echo "Installing awscli"
 
     ## install awscli
-    apt -y install awscli
-    echo "Ended awscli"
+    sudo apt -y install awscli
 }
 
 show_configuration() {
