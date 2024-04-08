@@ -1,9 +1,8 @@
 usersList() {
-  USER1="rws-integration-service,bucket-demonstracao-2;"
-  USER2="rappi,bucket-demonstracao-2;"
-  USER3="teste,bucket-demonstracao-1;"
+  USER1="rws-integration-service,rws-sftp-test;"
+  USER2="rappi,rws-sftp-test;"
 
-  userList=($USER1$USER2$USER3)
+  userList=($USER1$USER2)
 
   echo "${userList[@]}"
 }

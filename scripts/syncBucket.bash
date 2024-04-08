@@ -7,10 +7,10 @@ usage() {
 sync_bucket() {
 
     
-    sudo mkdir $2
+    mkdir $2
 
     ## sync files from the specified bucket
-    sudo aws s3 sync s3://$1 $2
+    aws s3 sync s3://$1 $2
 }
 
 create_users() {
