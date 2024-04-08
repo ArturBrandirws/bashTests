@@ -1,12 +1,14 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: $0 <access_key> <secret_key> "
+    echo "Usage: $0"
+    echo "Provide AWS access key and secret key via environment variables:"
+    echo "export AWS_ACCESS_KEY_ID='your_access_key_id'"
+    echo "export AWS_SECRET_ACCESS_KEY='your_secret_access_key'"
 }
 
 install_s3fs() {
     echo "Installing s3fs"
-
     ## install s3fs
     sudo apt -yqq install s3fs
 }
@@ -18,7 +20,7 @@ store_aws_credentials() {
     if [ ! -f /etc/passwd-s3fs ]; then
 
         ## Insert the credentials into /etc/passwd-s3fs
-        echo "$1:$2" | sudo tee /etc/passwd-s3fs > /dev/null
+        echo "${AWS_ACCESS_KEY_ID}:${AWS_SECRET_ACCESS_KEY}" | sudo tee /etc/passwd-s3fs > /dev/null
     fi
 }
 
@@ -33,26 +35,29 @@ adjust_permissions() {
 }
 
 show_configuration() {
-
     echo "AWS credentials saved in /etc/passwd-s3fs"
 }
 
 main () {
 
-    ## If the user don't pass 2 arguments
-    if [ $# -ne 2 ]; then
+    ## if the number of params isn't equal to 0
+    if [ $# -ne 0 ]; then
         usage
         exit 1
     fi
 
-    access_key=$1
-    secret_key=$2
-    
+    ## Check if access key and secret key environment variables are set
+    if [[ -z "${AWS_ACCESS_KEY_ID}" || -z "${AWS_SECRET_ACCESS_KEY}" ]]; then
+        echo "AWS access key and/or secret key not provided."
+        usage
+        exit 1
+    fi
+
     ## Intalls s3fs
     install_s3fs
 
     ## Store the aws credentials in /etc/passwd-s3fs
-    store_aws_credentials "$access_key" "$secret_key"
+    store_aws_credentials
 
     ## make the aws credentials file able to be readed
     adjust_permissions

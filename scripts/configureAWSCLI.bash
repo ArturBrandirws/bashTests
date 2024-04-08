@@ -61,7 +61,7 @@ main () {
     install_awscli
 
     ## Store the aws credentials in /etc/passwd-s3fs
-    store_aws_credentials "$access_key" "$secret_key"
+    ##store_aws_credentials "$access_key" "$secret_key"
 
     ## Print the end of configuration
     show_configuration
