@@ -26,6 +26,22 @@ create_users() {
     done
 }
 
+move_files() {
+
+    # Move all files except .bash_logout, .bashrc, .profile, and .ssh/
+    shopt -s extglob
+    for user_dir in "$1"/*/; do
+        for file in "$user_dir"*; do
+            case "$(basename "$file")" in
+                .bash_logout| .bashrc| .profile| .ssh/)
+                    continue ;;
+                *)
+                    sudo mv "$file" "$user_dir/upload/" ;;
+            esac
+        done
+    done
+}
+
 show_configuration() {
 
     ## Print the configuration message
@@ -48,6 +64,8 @@ main () {
 
     ## create a sftp user for every file in the bucket sync
     create_users "$mount_location" "$Bucket_Name"
+
+    move_files "$mount_location" 
 
     ## Print the configuration message
     show_configuration "$Bucket_Name"
