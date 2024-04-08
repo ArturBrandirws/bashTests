@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./scripts/users.bash
+source ./bashtests/scripts/users.bash
 
 install_openssh_server() {
 
