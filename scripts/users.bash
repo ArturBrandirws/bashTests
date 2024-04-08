@@ -1,6 +1,6 @@
 usersList() {
-  USER1="rws-integration-service,rws-sftp-test;"
-  USER2="rappi,rws-sftp-test;"
+  USER1="rws-integration-service,bucket-demonstracao-2;"
+  USER2="rappi,bucket-demonstracao-2;"
 
   userList=($USER1$USER2)
 
