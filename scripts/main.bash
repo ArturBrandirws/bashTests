@@ -9,19 +9,19 @@ validateVariables() {
 
 setNewEc2() {
   ## Configure machine and install basic software
-  chmod +x ./bashTests/scripts/initial_setup.bash
+  sudo chmod +x ./bashTests/scripts/initial_setup.bash
   ./bashTests/scripts/initial_setup.bash
 
   ## S3FS installation and setup
-  chmod +x ./bashTests/scripts/s3fs_config.bash
+  sudo chmod +x ./bashTests/scripts/s3fs_config.bash
   ./bashTests/scripts/s3fs_config.bash
 
   ## mount bucket
-  chmod +x ./bashTests/scripts/mount_s3fs_bucket.bash
+  sudo chmod +x ./bashTests/scripts/mount_s3fs_bucket.bash
   ./bashTests/scripts/mount_s3fs_bucket.bash
 
   ## create user
-  chmod +x ./bashTests/scripts/create_users.bash
+  sudo chmod +x ./bashTests/scripts/create_users.bash
   ./bashTests/scripts/create_users.bash
 }
 
