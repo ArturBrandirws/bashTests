@@ -1,8 +1,8 @@
 createFiles() {
     # Create the amount of files.txt with different names
     for ((i=1; i<=$3; i++)); do
-        sudo touch "$1/$2/file_$i.txt"
-        echo "created file_$I.txt in $1/$2"
+        sudo touch "$1/$2/upload/file_$i.txt"
+        echo "created file_$I.txt in $1/$2/upload"
     done
 }
 
