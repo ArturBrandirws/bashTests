@@ -1,7 +1,3 @@
-usage() {
-  echo "Usage: $0 <BucketName> <MountLocation> <group_user> <username>"
-}
-
 validateVariables() {
    if [[ -z "${AWS_S3_BUCKET_LIST}" ]]; then
     echo "No AWS_S3_BUCKET_LIST environment variable set. Exiting."
@@ -30,7 +26,7 @@ setNewEc2() {
 }
 
 main() {
-  validateVariables
+  ##validateVariables
 
   ## makes all ec2 configuration
   setNewEc2
