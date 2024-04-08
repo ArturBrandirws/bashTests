@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # source the functions file
-source ./bashtests/scripts/users.bash
+source ./bashTests/scripts/users.bash
 
 usage() {
     echo "Usage: $0 <bucket_name> <mount_location>"
