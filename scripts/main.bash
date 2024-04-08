@@ -28,8 +28,6 @@ setNewEc2() {
 main() {
   ##validateVariables
 
-  sudo su -
-
   ## makes all ec2 configuration
   setNewEc2
 }
