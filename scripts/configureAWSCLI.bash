@@ -46,7 +46,7 @@ show_configuration() {
 main () {
 
     ## If the user don't pass 2 arguments
-    if [ $# -ne 2 ]; then
+    if [ $# -ne 0 ]; then
         usage
         exit 1
     fi
