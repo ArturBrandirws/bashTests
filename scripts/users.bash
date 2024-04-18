@@ -1,8 +1,5 @@
+#!/bin/bash
+
 usersList() {
-  USER1="rws-integration-service,bucket-demonstracao-2;"
-  USER2="teste,bucket-demonstracao-2;"
-
-  userList=($USER1$USER2)
-
-  echo "${userList[@]}"
+  echo $(aws secretsmanager get-secret-value --secret-id prod/sftp/server --query SecretString  --output text | tr -d '{}' | tr ',' ';' | tr -d '"' | tr ':' ',')
 }

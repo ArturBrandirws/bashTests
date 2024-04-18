@@ -1,11 +1,7 @@
 #!/bin/bash
 
 # source the functions file
-source ~/bashTests/scripts/users.bash
-
-usage() {
-    echo "Usage: $0 <bucket_name> <mount_location>"
-}
+source ../scripts/users.sh
 
 create_directories() {
     echo "Creating directories"
@@ -28,71 +24,75 @@ edit_shells() {
 
     ## if the /etc/shells already contains "/bin/false"
     if grep -q "/bin/false" /etc/shells; then
-        echo "/bin/false already exists"
-
+      echo "/bin/false already exists"
     ## if the /etc/shells doesn't contains "/bin/false"
     else
-        echo "/bin/false doesn't exist"
-
-        ## insert "/bin/false" into /etc/shells
-        sudo bash -c 'echo "/bin/false" >> /etc/shells'
+      echo "/bin/false doesn't exist"
+      ## insert "/bin/false" into /etc/shells
+      sudo bash -c 'echo "/bin/false" >> /etc/shells'
     fi
 }
 
 configure_s3_bucket() {
-    echo "Configuring S3 Bucket"
+  echo "Configuring S3 Bucket"
 
-    ## Mount the bucket into the folder passed
-    sudo s3fs "$1" -o use_cache=/tmp -o allow_other -o mp_umask=022 -o multireq_max=5,nonempty "$2"
-
+  ## Mount the bucket into the folder passed
+  sudo s3fs "$1" -o iam_role='prodSFTPRole' -o use_cache=/tmp -o allow_other -o mp_umask=022 -o multireq_max=5,nonempty "$2"
 }
 
 automate_start_with_machine() {
-    echo "Automating s3fs to start with the machine"
+  echo "Automating s3fs to start with the machine"
 
-    ## Automate the mount when the machine reboot
-    sudo bash -c "echo \"$1 $2 fuse.s3fs _netdev,use_cache=/tmp,allow_other,mp_umask=022,multireq_max=5,passwd_file=/etc/passwd-s3fs 0 0\" >> /etc/fstab"
+  ## Automate the mount when the machine reboot
+  sudo bash -c "echo \"$1 $2 fuse.s3fs _netdev,use_cache=/tmp,allow_other,mp_umask=022,multireq_max=5 0 0\" >> /etc/fstab"
 }
 
 show_configuration() {
+  echo "S3 bucket $bucket_name is mounted in $mount_location"
+  df -Th
+}
 
-    echo "S3 bucket $bucket_name is mounted in $mount_location"
+check_mount() {
+  ## check if the bucket is mounted
+  if ! df -Th | grep -q "/var/$bucket_name"; then
+    echo "Error: s3fs not mounted."
+    exit 1
+  else
+    echo "bucket mounted in /var/$bucket_name"
+  fi
 }
 
 main() {
   ## Assing params
-  bucket_name=$(usersList)
-  echo "one is ${bucket_name[@]}"
+  user_list=$(usersList)
 
-  # Set the IFS variable to ;
+  # Parse array by end of line ; (for each user/bucket/password)
   IFS=';'
-
-  # Read the output into an array, splitting by ;
-  parsedArray=($bucket_name)
-
-  # Reset IFS to the default value
+  parsed_user_list=($user_list)
   unset IFS
-
   ##########
 
-  # Set the IFS variable to ,
+  # Iterate for each user/bucket/password
   IFS=','
-
-  # Iterate over the parsedArray
-  for element in "${parsedArray[@]}"; do
+  for element in "${parsed_user_list[@]}"; do
     # Parse the element by , and read into an array
-    parsedElement=($element)
+    parsed_element=($element)
 
     # Get the first value
-    userName=${parsedElement[0]}
-    bucketName=${parsedElement[1]}
+    user_name=${parsed_element[0]}
+    bucket_name=${parsed_element[1]}
 
     # Print the first value
-    echo "userName is $userName"
-    echo "bucket is $bucketName"
+    echo "user_name is $user_name"
+    echo "bucket_name is $bucket_name"
 
     # Define mount location
-    mount_location="/var/$bucketName"
+    mount_location="/var/$bucket_name"
+
+     # Sync files from s3 on this bucket to this machine
+    # echo "Starting S3 sync to local"
+    # sudo aws s3 sync s3://$bucket_name/$user_name/upload/ $mount_location/$user_name/upload/
+    # echo "Ended S3 sync to local"
 
     ## create directories where the bucket will be mounted
     create_directories "$mount_location"
@@ -101,17 +101,18 @@ main() {
     edit_shells
 
     ## configure the s3 bucket in the mount location
-    configure_s3_bucket "$bucketName" "$mount_location"
+    configure_s3_bucket "$bucket_name" "$mount_location"
 
     ## automate the bucket mount when the machine reboot
-    automate_start_with_machine "$bucketName" "$mount_location"
+    automate_start_with_machine "$bucket_name" "$mount_location"
 
     ## Print the end of configuration
-    show_configuration "$bucketName" "$mount_location"
-  done
+    show_configuration "$bucket_name" "$mount_location"
 
-  # Reset IFS to the default value
-  unset IFS
+    ## check if the bucket is mounted
+    check_mount "$bucket_name"
+  done
+  unset IFS 
 }
 
 main

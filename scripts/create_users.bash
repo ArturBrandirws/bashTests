@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ~/bashTests/scripts/users.bash
+source ../scripts/users.sh
 
 install_openssh_server() {
 
@@ -81,7 +81,6 @@ configure_ssh_key() {
 
     # Check if the .ssh directory already exists
     if [ ! -d "$1/$2/.ssh" ]; then
-
         # Creating directory if it doesn't exist
         sudo mkdir -p "$1/$2/.ssh"  
     else
@@ -89,7 +88,13 @@ configure_ssh_key() {
     fi
 
     # Copy the public key from GitHub into $1/$2/.ssh/authorized_keys
-    sudo wget -O "$1/$2/.ssh/authorized_keys" "https://raw.githubusercontent.com/ArturBrandirws/bashTests/main/id_rsa.pub"
+    source_dir="/ssh_public_keys/$2"
+    target_dir="$1/$2/.ssh"
+
+    file_name="id_rsa.pub"
+    new_file_name="authorized_keys"
+
+    mv "$source_dir/$file_name" "$target_dir/$new_file_name"
     echo "SFTP configured!"
 }
 
@@ -100,8 +105,7 @@ show_configuration() {
 }
 
 main() {
-
-    ## Assing params
+  ## Assing params
   bucket_name=$(usersList)
   echo "one is ${bucket_name[@]}"
 
@@ -129,7 +133,7 @@ main() {
     bucketName=${parsedElement[1]}
 
     # Print the first value
-    echo "userName is $userName"
+    echo "user_name is $userName"
     echo "group is $bucketName"
 
     # Define mount location
@@ -158,4 +162,4 @@ main() {
   done
 }
 
-main "$@"
+main
