@@ -1,40 +1,74 @@
-usage() {
+#!/usr/bin/env bats
 
-    echo "Usage: $0 <MountLocation> <username> <amount_files>"
+source ~/bashTests/scripts/users.bash
+
+setup() {
+  load 'test_helper/bats-support/load'
+  load 'test_helper/bats-assert/load'
 }
 
-createFiles() {
-   
-    # Create the amount of files.txt with different names
-    for ((index = 1; index <= $3; index++)); do
+teardown() {
+  if [ "$(dpkg-query -W -f='${Status}' openssh-server | grep -c "ok installed")" -eq 1 ]; then
+    sudo apt-get remove -y openssh-server
+  fi
 
-        ## create the file in the passed path
-        sudo touch "$1/$2/upload/file_$index.txt"
+  if grep -q grouptest /etc/group; then
+    sudo groupdel grouptest
+  fi
 
-        ## if the index is 100, 200, 300 ...
-        if [$index % 100 == 0]; then
-            
-            ## print a feedback of the file's creation 
-            echo "created file_$index.txt in $1/$2/upload"
-        fi
-    done
+  if id testUser &>/dev/null; then
+    sudo userdel testUser
+  fi
 }
 
-main() {
-
-    ## if the number of params isn't equal to 3
-    if [ $# -ne 3 ]; then
-        usage
-        exit 1
-    fi
-
-    ## assign params
-    mount_location=$1
-    username=$2
-    amount_files=$3
-
-    ## create the number of files passed in the path indicated
-    createFiles "$1" "$2" "$3"
+@test "Install OpenSSH server" {
+  source ~/bashTests/scripts/create_users.bash
+  output=$(install_openssh_server | grep -o 'OpenSSH server installed$')
+  assert_output 'OpenSSH server installed' "$output"
 }
 
-main "$@"
+@test "Create group if not exists" {
+  source ~/bashTests/scripts/create_users.bash
+  output=$(configure_ssh_sftp "grouptest" "/var/grouptest" | grep -o 'group added')
+  assert_output 'group added' "$output"
+}
+
+# Test creating users
+@test "Create user if not exists" {
+  source ~/bashTests/scripts/create_users.bash
+  if grep -q grouptest /etc/group; then
+    echo "grouptest already exist"
+  else
+    sudo groupadd grouptest
+  fi
+  output=$(create_user "testUser" "/var/grouptest" "grouptest" | grep -o 'User created')
+  assert_output 'User created' "$output"
+}
+
+@test "Create user's folder" {
+  source ~/bashTests/scripts/create_users.bash
+  if grep -q grouptest /etc/group; then
+    echo "grouptest already exist"
+  else
+    sudo groupadd grouptest
+  fi
+  output=$(create_user "testUser" "/var/grouptest" "grouptest" | grep -o 'upload folder created')
+  assert_output 'upload folder created' "$output"
+}
+
+# Test storing public SSH keys
+@test "Store public SSH key" {
+  source ~/bashTests/scripts/create_users.bash
+  if grep -q grouptest /etc/group; then
+    echo "grouptest already exist"
+  else
+    sudo groupadd grouptest
+  fi
+  if id testUser &>/dev/null; then
+    echo "testUser already exist"
+  else
+    sudo useradd testUser
+  fi
+  output=$(configure_ssh_key "grouptest" "testUser" | grep -o 'SFTP configured!')
+  assert_output 'SFTP configured!' "$output"
+}

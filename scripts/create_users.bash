@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ../scripts/users.sh
+source ~/bashTests/scripts/users.bash
 
 install_openssh_server() {
 
@@ -9,16 +9,20 @@ install_openssh_server() {
     ## Install openssh-server
     sudo apt-get install -y openssh-server
 
-    echo "OpenSSH server installed"
+    if [ "$(dpkg-query -W -f='${Status}' openssh-server | grep -c "ok installed")" ]; then
+      echo "OpenSSH server installed"
+    fi
 }
 
 configure_ssh_sftp() {
 
     ## If the group passed doesn't exist
-    if ! grep -q "Match Group $1" /etc/ssh/sshd_config; then
-        
+    if ! grep -q $1 /etc/group; then
+
         ## Create the group
         sudo groupadd "$1"
+
+        echo "group added"
 
         echo "Configuring SSH to SFTP"
 
@@ -36,7 +40,7 @@ Match Group $1
 EOF"
         echo "SFTP configuration finished"
 
-        ## restart systemctl 
+        ## restart systemctl
         sudo systemctl restart sshd
     fi
 }
@@ -55,24 +59,25 @@ create_user() {
 
         ## Create the user's upload folder
         sudo mkdir -p "$2/$1/upload"
+        echo "upload folder created"
 
         ## Makes the user's folder able to read, write and exec
         sudo chmod 755 "$2/$1"
-        echo "User $1 created."
+        echo "User created"
     else
         echo "User $1 already exists. Skipping user creation."
     fi
 }
 
 adjust_owners() {
-    
+
     echo "Adjusting owners"
     sudo chown root:"$1" "$2/$3"
     sudo chown "$3":"$1" "$2/$3/upload"
 }
 
 restart_ssh_service() {
-    
+
     sudo systemctl restart sshd
 }
 
@@ -82,20 +87,23 @@ configure_ssh_key() {
     # Check if the .ssh directory already exists
     if [ ! -d "$1/$2/.ssh" ]; then
         # Creating directory if it doesn't exist
-        sudo mkdir -p "$1/$2/.ssh"  
+        sudo mkdir -p "$1/$2/.ssh"
     else
         echo "Directory $1/$2/.ssh already exists."
     fi
 
     # Copy the public key from GitHub into $1/$2/.ssh/authorized_keys
-    source_dir="/ssh_public_keys/$2"
+    source_dir="../ssh_public_keys/$2"
     target_dir="$1/$2/.ssh"
 
     file_name="id_rsa.pub"
     new_file_name="authorized_keys"
 
     mv "$source_dir/$file_name" "$target_dir/$new_file_name"
-    echo "SFTP configured!"
+
+    if [ -f $target_dir/$new_file_name ]; then
+        echo "SFTP configured!"
+    fi
 }
 
 
@@ -143,6 +151,10 @@ main() {
     install_openssh_server
 
     ## Check if the group passed already exist. If it doesn't exist create the group and insert the configuration for the group in /etc/ssh/sshd_config
+
+    ## Check if the group passed already exist. If it doesn't exist create the group and insert the configuration for the group in /etc/ssh/sshd_config
+
+    ## Check if the group passed already exist. If it doesn't exist create the group and insert the configuration for the group in /etc/ssh/sshd_config
     configure_ssh_sftp "$bucketName" "$mount_location"
 
     ## Check if the user passed already exist. If it doesn't exist create and configure.
@@ -161,5 +173,3 @@ main() {
     show_configuration "$userName" "$mount_location" "$bucketName"
   done
 }
-
-main
