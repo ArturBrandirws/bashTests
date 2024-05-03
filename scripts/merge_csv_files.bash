@@ -10,7 +10,7 @@ download_csv_files() {
     aws s3 sync "s3://$bucket/$folder_path" ./temp_files --exclude "*" --include "*.csv"
 }
 
-# Function to merge CSV files into a single file
+# Function to merge CSV files into a single file with new lines between files
 merge_csv_files() {
     local output_file_name="$1"
     echo "Merging CSV files..."
@@ -22,6 +22,9 @@ merge_csv_files() {
             # If it's the first file, copy the header to the final file
             head -n 1 "$file" > "$output_file_name"
             first_file=false
+        else
+            # Insert a blank line to separate files
+            echo "" >> "$output_file_name"
         fi
         # Append all lines (excluding header) to the final file
         tail -n +2 "$file" >> "$output_file_name"
@@ -34,7 +37,7 @@ move_file_to_s3() {
     local bucket="$2"
     local destination_path="$3"
     echo "Moving final file to S3..."
-    aws s3 cp "./$output_file_name" "s3://$bucket/$destination_path"
+    aws s3 cp "./$output_file_name" "s3://$bucket/$destination_path/$output_file_name"
 }
 
 # Function to clean up temporary files
@@ -65,4 +68,4 @@ main() {
     echo "Process completed!"
 }
 
-main
+main "$@"
